@@ -24,3 +24,12 @@ dev = [
     "pytest>=9.1.1",
     "ruff>=0.17.1",
 ]
+
+
+[tool.pyright]
+include = ["src", "tests"]
+
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
