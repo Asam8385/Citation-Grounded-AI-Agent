@@ -9,6 +9,7 @@ authors = [
 requires-python = ">=3.12"
 dependencies = [
     "datetime>=6.0",
+    "langchain-core>=1.6.12",
     "pydantic>=2.14.1",
     "pymupdf>=1.28.2",
 ]
