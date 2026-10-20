@@ -15,4 +15,25 @@ def format_search_text(faq: FAQRecord) -> str:
         f"Answer: {faq.answer}"
     )
 
-def build_faq_chunks(dataset: FAQDataset)
+def build_faq_chunks(dataset: FAQDataset ) -> list[EvidenceChunk]:
+    """Build one evidence chunk per FAQ, preserving its source reference."""
+    chunks: list[EvidenceChunk] = []
+
+    for faq in dataset.faqs:
+        chunk = EvidenceChunk(
+            chunk_id=generate_chunk_id(faq),
+            faq_id=faq.faq_id,
+            document_id=faq.document_id,
+            category=faq.category,
+            section=faq.section,
+            question=faq.question,
+            answer=faq.answer,
+            search_text=format_search_text(faq),
+            source_path=faq.source_path,
+            source_page=faq.source_page,
+            source_version=faq.source_version,
+            effective_date=faq.effective_date,
+        )
+        chunks.append(chunk)
+
+    return chunks
