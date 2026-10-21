@@ -28,6 +28,7 @@ def build_bm25_retriever(
         preprocess_func=tokenize,
         k=k,
     )
+    
 
 
 def load_bm25_retriever(
