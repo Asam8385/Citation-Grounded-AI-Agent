@@ -16,7 +16,7 @@ from citation_grounding_agent.faq_loader import load_FAQDataset
 from citation_grounding_agent.models import EvidenceChunk
 
 
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_INPUT = PROJECT_ROOT / "data" / "faqs" / "sample_faqs.json"
 DEFAULT_OUTPUT = PROJECT_ROOT / "data" / "faqs" / "faq_chunks.json"
 
