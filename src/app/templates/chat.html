@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Ask your internal FAQ collection and explore the verified sources behind each answer.">
+  <title>Grounded — FAQ assistant</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <link rel="stylesheet" href="{{ url_for('static', path='chat.css') }}">
+  <script id="chat-config" type="application/json">{{ chat_config | tojson }}</script>
+  <script src="{{ url_for('static', path='chat.js') }}" defer></script>
+</head>
+<body class="antialiased">
+  <svg class="icon-library" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+    <symbol id="icon-mark" viewBox="0 0 24 24"><path d="M5 5h8a6 6 0 0 1 0 12h-2v4M5 5v12h6M5 11h8"/></symbol>
+    <symbol id="icon-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="icon-book" viewBox="0 0 24 24"><path d="M12 5c-3-2-6-2-9-1v15c3-1 6-1 9 1 3-2 6-2 9-1V4c-3-1-6-1-9 1Zm0 0v15"/></symbol>
+    <symbol id="icon-arrow" viewBox="0 0 24 24"><path d="M12 19V5m-6 6 6-6 6 6"/></symbol>
+    <symbol id="icon-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol>
+    <symbol id="icon-spark" viewBox="0 0 24 24"><path d="m12 3 2.5 6.5L21 12l-6.5 2.5L12 21l-2.5-6.5L3 12l6.5-2.5Z"/></symbol>
+    <symbol id="icon-chevron" viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></symbol>
+  </svg>
+
+  <div class="app-shell">
+    <aside class="sidebar" aria-label="Workspace">
+      <a class="brand" href="{{ url_for('index') }}" aria-label="Grounded home">
+        <span class="brand-mark"><svg class="icon"><use href="#icon-mark"/></svg></span>
+        <span>grounded<span class="brand-period">.</span></span>
+      </a>
+      <p class="sidebar-intro">A little clarity, backed by evidence.</p>
+
+      <button type="button" data-new-chat class="new-chat hover:bg-white/10 transition-colors">
+        <svg class="icon"><use href="#icon-plus"/></svg> New conversation
+      </button>
+
+      <div class="sidebar-section">
+        <p class="eyebrow sidebar-label">YOUR WORKSPACE</p>
+        <div class="workspace-item"><svg class="icon"><use href="#icon-book"/></svg><div>FAQ assistant<small>Internal knowledge collection</small></div><span class="workspace-dot"></span></div>
+      </div>
+
+      <div class="sidebar-note">
+        <span class="note-icon"><svg class="icon"><use href="#icon-check"/></svg></span>
+        <h2>Follow the evidence.</h2>
+        <p>Every supported answer includes quotations you can inspect. When evidence is missing, we’ll say so.</p>
+      </div>
+      <div class="sidebar-footer"><span class="avatar">G</span><div>Grounded workspace<small>FAQ knowledge assistant</small></div></div>
+    </aside>
+
+    <main class="workspace">
+      <header class="topbar">
+        <div class="flex items-center gap-3"><span class="mobile-brand">grounded.</span><span class="desktop-breadcrumb text-xs tracking-wide">WORKSPACE <span class="mx-3 opacity-40">/</span> FAQ ASSISTANT</span></div>
+        <div class="flex items-center gap-4">
+          <span id="connection-status" class="connection-status" role="status"><span class="status-dot"></span><span id="connection-label">Checking setup</span></span>
+          <button type="button" data-new-chat class="header-reset" title="Start a new conversation" aria-label="Start a new conversation"><svg class="icon"><use href="#icon-plus"/></svg></button>
+        </div>
+      </header>
+
+      <div class="status-container">
+        <div id="setup-banner" class="setup-banner" role="status" hidden>
+          <div><strong>One thing to set up</strong><p id="setup-message"></p></div>
+          <button id="recheck" type="button" class="text-xs font-semibold underline underline-offset-4">Check again</button>
+        </div>
+      </div>
+
+      <div id="chat-scroll" class="chat-scroll">
+        <section id="welcome" class="welcome" aria-labelledby="welcome-title">
+          <div class="welcome-emblem"><svg class="icon"><use href="#icon-spark"/></svg></div>
+          <p class="eyebrow welcome-eyebrow">YOUR QUESTIONS. YOUR KNOWLEDGE.</p>
+          <h1 id="welcome-title">A clear answer.<br><span>A source to trust.</span></h1>
+          <p class="welcome-description">Make sense of your company FAQs, with verified<br class="hidden sm:block"> answers and the evidence behind them.</p>
+
+          <div class="suggestion-heading"><span>START WITH A QUESTION</span><span class="suggestion-line"></span></div>
+          <div class="suggestion-grid">
+            <button type="button" data-prompt="How much annual leave does a full-time employee receive?" class="suggestion group hover:border-emerald-800/40 transition-all">
+              <span class="suggestion-category">TIME OFF</span><span>How much annual leave<br>am I entitled to?</span><svg class="icon group-hover:translate-x-1 transition-transform"><use href="#icon-chevron"/></svg>
+            </button>
+            <button type="button" data-prompt="How do I request annual leave, and how much notice is needed?" class="suggestion group hover:border-emerald-800/40 transition-all">
+              <span class="suggestion-category">LEAVE REQUESTS</span><span>How do I request<br>annual leave?</span><svg class="icon group-hover:translate-x-1 transition-transform"><use href="#icon-chevron"/></svg>
+            </button>
+          </div>
+          <p class="welcome-footnote"><svg class="icon"><use href="#icon-book"/></svg> Built around your FAQ collection</p>
+        </section>
+        <section id="messages" class="messages" aria-label="Conversation" aria-live="polite" aria-relevant="additions" aria-busy="false"></section>
+      </div>
+
+      <footer class="composer-area">
+        <div class="composer-inner">
+          <form id="chat-form" class="composer">
+            <label class="sr-only" for="question">Ask a question about the FAQs</label>
+            <textarea id="question" name="question" rows="1" maxlength="4000" required placeholder="Ask anything about your FAQs…" aria-describedby="composer-help"></textarea>
+            <div class="composer-toolbar">
+              <div class="composer-controls">
+                <svg class="icon"><use href="#icon-book"/></svg>
+                <label class="sr-only" for="search-mode">Search method</label>
+                <select id="search-mode" aria-label="Search method"></select>
+                <span class="control-divider"></span>
+                <label for="top-k" class="text-xs">Sources</label>
+                <select id="top-k" aria-label="Number of sources to retrieve">
+                  {% for count in [3, 5, 8, 10, 20] %}<option value="{{ count }}" {% if chat_config.top_k == count %}selected{% endif %}>{{ count }}</option>{% endfor %}
+                  {% if chat_config.top_k not in [3, 5, 8, 10, 20] %}<option value="{{ chat_config.top_k }}" selected>{{ chat_config.top_k }}</option>{% endif %}
+                </select>
+              </div>
+              <button id="send" type="submit" class="send-button hover:bg-emerald-950 transition-colors" aria-label="Send question"><svg class="icon"><use href="#icon-arrow"/></svg></button>
+            </div>
+          </form>
+          <div id="composer-help" class="composer-help"><span>Each question is answered independently from the FAQs.</span><span class="hidden sm:inline">Enter to send <span class="mx-1">·</span> Shift + Enter for a new line</span></div>
+        </div>
+      </footer>
+    </main>
+  </div>
+  <noscript><p class="noscript-message">Enable JavaScript to use the chat interface.</p></noscript>
+</body>
+</html>

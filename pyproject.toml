@@ -8,7 +8,10 @@ authors = [
 ]
 requires-python = ">=3.12"
 dependencies = [
+    "azure-identity>=1.26.0",
     "datetime>=6.0",
+    "fastapi>=0.161.0",
+    "jinja2>=3.1.6",
     "langchain>=1.4.7",
     "langchain-chroma>=1.1.0",
     "langchain-community>=0.4.2",
@@ -17,11 +20,15 @@ dependencies = [
     "langchain-openai>=1.7.2",
     "pydantic>=2.14.1",
     "pymupdf>=1.28.2",
+    "python-dotenv>=1.2.4",
+    "rank-bm25>=0.2.2",
     "sentence-transformers>=6.1.0",
+    "uvicorn[standard]>=0.54.0",
 ]
 
 [project.scripts]
 citation-grounding-agent = "citation_grounding_agent:main"
+app = "app:main"
 
 [build-system]
 requires = ["uv_build>=0.12.3,<0.13.0"]

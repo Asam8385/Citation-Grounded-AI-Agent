@@ -11,6 +11,10 @@ from langchain_core.tools import tool
 from langchain_openai import ChatOpenAI
 
 
+
+from azure.identity import DefaultAzureCredential , get_bearer_token_provider
+
+
 from citation_grounding_agent.citation_validator import abstain, validate_draft
 from citation_grounding_agent.hybrid_retriever import HybridRetriever , SearchMode
 from citation_grounding_agent.schemas import GroundedAnswer, GroundedDraft
@@ -33,6 +37,11 @@ Rules:
 """
 
 
+token_provider = get_bearer_token_provider(
+    DefaultAzureCredential(),
+    "https://ai.azure.com/.default"
+)
+
 def ask_grounded_question(
       question: str,
       retriever: HybridRetriever,
@@ -50,7 +59,13 @@ def ask_grounded_question(
       raise ValueError("K must be >=1")
 
    model_name = model_name or os.getenv("OPENAI_CHAT_MODEL" , "gpt-4.1-mini")
-   llm = ChatOpenAI(model=model_name , temperature=0, timeout=60, max_retries=2)
+   llm = ChatOpenAI(
+      model=model_name ,
+      base_url="https://asam-test-project8385-resource.services.ai.azure.com/api/projects/asam-test-project8385/openai/v1" ,  
+      api_key=token_provider,
+      temperature=0, 
+      timeout=60, 
+      max_retries=2)
 
    last_reason = " No verified evidence was returned"
 
@@ -87,7 +102,7 @@ def ask_grounded_question(
 
       agent = create_agent(
           model=llm,
-          tools=[search_internal_faq]
+          tools=[search_internal_faq],
           system_prompt=SYSTEM_PROMPT,
           response_format=GroundedDraft
       )
@@ -104,34 +119,33 @@ def ask_grounded_question(
           config={"recursion_limit": 12}
       )
 
-        raw_draft = result.get("structured_response")
-        if not isinstance(raw_draft, GroundedDraft):
-            last_reason = "Agent did not return validated structured output"
-            continue
-        if not exposed_sources:
-            last_reason = "Agent did not call the retrieval tool"
-            continue
+      raw_draft = result.get("structured_response")
+      if not isinstance(raw_draft, GroundedDraft):
+         last_reason = "Agent did not return validated structured output"
+         continue
+      if not exposed_sources:
+         last_reason = "Agent did not call the retrieval tool"
+         continue
 
-        try:
-            answer = validate_draft(raw_draft, exposed_sources, llm)
-        except Exception:
-            # Fail closed if independent evidence review cannot run.
-            LOGGER.exception("Evidence validation failed")
-            last_reason = "Independent evidence validation was unavailable"
-            continue
+      try:
+         answer = validate_draft(raw_draft, exposed_sources, llm)
+      except Exception:
+         # Fail closed if independent evidence review cannot run.
+         LOGGER.exception("Evidence validation failed")
+         last_reason = "Independent evidence validation was unavailable"
+         continue
 
-        if answer.status == "answered":
-            return answer
-        last_reason = answer.reason
+      if answer.status == "answered":
+         return answer
+      last_reason = answer.reason
 
-    return abstain(last_reason)
-
-
+   return abstain(last_reason)
 
 
-      
 
 
    
 
-   
+
+
+
