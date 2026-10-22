@@ -136,7 +136,7 @@ def validate_draft(
         claims=claims,
         citations=citations,
     )
-  
+
 
 
 
